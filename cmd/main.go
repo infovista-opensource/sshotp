@@ -10,7 +10,7 @@ import (
 )
 
 var password string
-var useEnv bool
+var envName string
 var timeout time.Duration
 var disableConfirmHostAuthenticity bool
 
@@ -29,8 +29,8 @@ It can supply a password to any process with an identifiable password prompt.`,
 			os.Exit(1)
 		}
 
-		if useEnv {
-			password = os.Getenv("SSHPASS")
+		if envName != "" {
+			password = os.Getenv(envName)
 		}
 		options := app.DefaultOptions
 		options.AutoConfirmHostAuthenticity = !disableConfirmHostAuthenticity
@@ -50,7 +50,7 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&password, "password", "", "plaintext password (not recommended)")
-	rootCmd.PersistentFlags().BoolVar(&useEnv, "env", false, "use value of $SSHPASS environment variable as password")
+	rootCmd.PersistentFlags().StringVar(&envName, "env_name", "", "use value environment variable as password")
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", time.Second*10, "timeout length to wait for prompt/confirmation")
 	rootCmd.PersistentFlags().BoolVar(&disableConfirmHostAuthenticity, "disable-ssh-host-confirm", false, "sshpass will automatically confirm the authenticity of SSH hosts unless this option is specified")
 }
