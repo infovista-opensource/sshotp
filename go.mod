@@ -1,10 +1,10 @@
-module github.com/liamg/sshotp
+module github.com/timestee/sshotp
+
+go 1.15
 
 require (
-	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/kr/pty v1.1.4
-	github.com/riywo/loginshell v0.0.0-20181227004642-c2f4167b2303
-	github.com/spf13/cobra v0.0.3
-	github.com/spf13/pflag v1.0.3 // indirect
-	golang.org/x/crypto v0.0.0-20190313024323-a1f597ede03a
+	github.com/creack/pty v1.1.17
+	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab
+	github.com/spf13/cobra v1.2.1
+	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 )

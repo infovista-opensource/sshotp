@@ -2,6 +2,9 @@ package app
 
 import (
 	"fmt"
+	"github.com/creack/pty"
+	"github.com/riywo/loginshell"
+	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"log"
 	"os"
@@ -10,10 +13,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/kr/pty"
-	"github.com/riywo/loginshell"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 type Options struct {
@@ -25,7 +24,7 @@ type Options struct {
 }
 
 var DefaultOptions = &Options{
-	ExpectedPrompt:              "assword:",
+	ExpectedPrompt:              "password:",
 	ExpectedFailure:             "denied",
 	Timeout:                     time.Second * 10,
 	AutoConfirmHostAuthenticity: true,
@@ -34,7 +33,6 @@ var DefaultOptions = &Options{
 
 // Run attempts to run the provided command and insert the given passwords one by one when prompted.
 func Run(cmd string, passwords []string, options *Options) error {
-
 	if options == nil {
 		options = DefaultOptions
 	}
@@ -51,22 +49,22 @@ func Run(cmd string, passwords []string, options *Options) error {
 
 	c := exec.Command(shell)
 
-	ptmx, err := pty.Start(c)
+	pt, err := pty.Start(c)
 	if err != nil {
 		return err
 	}
-	defer func() { _ = ptmx.Close() }()
+	defer func() { _ = pt.Close() }()
 
 	ch := make(chan os.Signal, 1)
-	signal.Notify(ch, syscall.SIGWINCH)
+	signal.Notify(ch, syscall.SIGHUP)
 	go func() {
 		for range ch {
-			if err := pty.InheritSize(os.Stdin, ptmx); err != nil {
+			if err := pty.InheritSize(os.Stdin, pt); err != nil {
 				log.Printf("error resizing pty: %s", err)
 			}
 		}
 	}()
-	ch <- syscall.SIGWINCH
+	ch <- syscall.SIGHUP
 
 	oldState, err := terminal.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
@@ -74,14 +72,14 @@ func Run(cmd string, passwords []string, options *Options) error {
 	}
 	defer func() { _ = terminal.Restore(int(os.Stdin.Fd()), oldState) }()
 
-	if _, err := ptmx.Write([]byte(cmd + "; exit\n")); err != nil {
+	if _, err := pt.Write([]byte(cmd + "; exit\n")); err != nil {
 		return err
 	}
 
 	var buf string
 	for i, password := range passwords {
 		append, err := enterPassword(
-			ptmx,
+			pt,
 			password,
 			options,
 			i == len(passwords)-1,
@@ -96,7 +94,7 @@ func Run(cmd string, passwords []string, options *Options) error {
 	return nil
 }
 
-func enterPassword(ptmx *os.File, password string, options *Options, redirectPipes bool, buffered string) (string, error) {
+func enterPassword(pt *os.File, password string, options *Options, redirectPipes bool, buffered string) (string, error) {
 
 	errChan := make(chan error)
 	readyChan := make(chan string)
@@ -106,7 +104,7 @@ func enterPassword(ptmx *os.File, password string, options *Options, redirectPip
 		confirmed := false
 		entered := false
 		for {
-			n, err := ptmx.Read(buf)
+			n, err := pt.Read(buf)
 			if err != nil {
 				errChan <- err
 				break
@@ -119,7 +117,7 @@ func enterPassword(ptmx *os.File, password string, options *Options, redirectPip
 				if options.AutoConfirmHostAuthenticity {
 					confirmed = true
 					data = ""
-					ptmx.Write([]byte("yes\n"))
+					pt.Write([]byte("yes\n"))
 				} else {
 					errChan <- fmt.Errorf("host authenticity confirmation required, but it was disabled")
 					break
@@ -127,7 +125,7 @@ func enterPassword(ptmx *os.File, password string, options *Options, redirectPip
 			} else if !entered && strings.Contains(data, options.ExpectedPrompt) {
 				entered = true
 				data = ""
-				ptmx.Write([]byte(password + "\n"))
+				pt.Write([]byte(password + "\n"))
 			} else if entered && len(data) > 5 {
 				if strings.Contains(data, options.ExpectedPrompt) || strings.Contains(data, options.ExpectedFailure) {
 					errChan <- fmt.Errorf("authentication failure")
@@ -146,8 +144,8 @@ func enterPassword(ptmx *os.File, password string, options *Options, redirectPip
 	case newBuffered := <-readyChan:
 		if redirectPipes {
 			os.Stdout.WriteString(newBuffered)
-			go func() { _, _ = io.Copy(ptmx, os.Stdin) }()
-			_, _ = io.Copy(os.Stdout, ptmx)
+			go func() { _, _ = io.Copy(pt, os.Stdin) }()
+			_, _ = io.Copy(os.Stdout, pt)
 			return "", nil
 		}
 		return newBuffered, nil

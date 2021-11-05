@@ -2,12 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/spf13/cobra"
+	"github.com/timestee/sshotp/app"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/liamg/sshotp/app"
-	"github.com/spf13/cobra"
 )
 
 var password string
@@ -16,9 +15,11 @@ var timeout time.Duration
 var disableConfirmHostAuthenticity bool
 
 var rootCmd = &cobra.Command{
-	Use:   "sshotp",
+	Use:   "sshpass",
 	Short: "Enter passwords to commands non-interactively",
-	Long:  `SSHOTP is essentially a go implementation of sshpass (https://linux.die.net/man/1/sshpass), though unlike sshpass it doesn't restrict itself to SSH logins. It can supply a password to any process with an identifiable password prompt.`,
+	Long: `sshpass is essentially a go implementation of sshpass (https://linux.die.net/man/1/sshpass).
+Though unlike sshpass it doesn't restrict itself to SSH logins.
+It can supply a password to any process with an identifiable password prompt.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
 		command := strings.Join(args, " ")
@@ -29,7 +30,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		if useEnv {
-			password = os.Getenv("SSHOTP")
+			password = os.Getenv("SSHPASS")
 		}
 		options := app.DefaultOptions
 		options.AutoConfirmHostAuthenticity = !disableConfirmHostAuthenticity
@@ -49,7 +50,7 @@ func Execute() {
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&password, "password", "", "plaintext password (not recommended)")
-	rootCmd.PersistentFlags().BoolVar(&useEnv, "env", false, "use value of $SSHOTP environment variable as password")
+	rootCmd.PersistentFlags().BoolVar(&useEnv, "env", false, "use value of $SSHPASS environment variable as password")
 	rootCmd.PersistentFlags().DurationVar(&timeout, "timeout", time.Second*10, "timeout length to wait for prompt/confirmation")
-	rootCmd.PersistentFlags().BoolVar(&disableConfirmHostAuthenticity, "disable-ssh-host-confirm", false, "sshotp will automatically confirm the authenticity of SSH hosts unless this option is specified")
+	rootCmd.PersistentFlags().BoolVar(&disableConfirmHostAuthenticity, "disable-ssh-host-confirm", false, "sshpass will automatically confirm the authenticity of SSH hosts unless this option is specified")
 }
