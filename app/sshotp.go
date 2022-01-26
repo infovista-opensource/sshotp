@@ -2,9 +2,6 @@ package app
 
 import (
 	"fmt"
-	"github.com/creack/pty"
-	"github.com/riywo/loginshell"
-	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"log"
 	"os"
@@ -13,30 +10,14 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/creack/pty"
+	"github.com/riywo/loginshell"
+	"golang.org/x/crypto/ssh/terminal"
 )
-
-type Options struct {
-	ExpectedPrompt              string        // ExpectedPrompt is the string to treat as the password prompt e.g. "Password: "
-	ExpectedFailure             string        // ExpectedFailure is the string to treat as an indication of failure e.g. "Incorrect password"
-	Timeout                     time.Duration // Timeout is the duration to wait for a prompt/failure before giving up
-	AutoConfirmHostAuthenticity bool          // AutoConfirmHostAuthenticity will type 'yes' on host authenticity confirmations when set
-	Shell                       string        // Shell is a path to the shell to use e.g. /bin/bash - leave blank to use user shell
-}
-
-var DefaultOptions = &Options{
-	ExpectedPrompt:              "password:",
-	ExpectedFailure:             "denied",
-	Timeout:                     time.Second * 10,
-	AutoConfirmHostAuthenticity: true,
-	Shell:                       "",
-}
 
 // Run attempts to run the provided command and insert the given passwords one by one when prompted.
 func Run(cmd string, passwords []string, options *Options) error {
-	if options == nil {
-		options = DefaultOptions
-	}
-
 	shell := options.Shell
 
 	if shell == "" {
@@ -114,7 +95,7 @@ func enterPassword(pt *os.File, password string, options *Options, redirectPipes
 			}
 			data += string(buf[:n])
 			if !confirmed && strings.Contains(data, "The authenticity of host ") {
-				if options.AutoConfirmHostAuthenticity {
+				if !options.DisableConfirmHostAuthenticity {
 					confirmed = true
 					data = ""
 					pt.Write([]byte("yes\n"))
