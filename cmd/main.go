@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -21,8 +22,7 @@ func Execute() {
 		It can supply a password to any process with an identifiable password prompt.`),
 	).Use(func(ctx context.Context, cmd *xcmd.Command, next xcmd.Executer) error {
 		if len(cmd.FlagSet.Args()) == 0 {
-			fmt.Println("You must specify a command.")
-			os.Exit(1)
+			return errors.New("must specify a command")
 		}
 		return next(ctx, cmd)
 	}).SetExecuter(func(ctx context.Context, cmd *xcmd.Command) error {
@@ -32,8 +32,7 @@ func Execute() {
 			password = os.Getenv(cc.EnvName)
 		}
 		if err := app.Run(args, []string{password}, cc); err != nil {
-			fmt.Println("Error: " + err.Error())
-			os.Exit(1)
+			return err
 		}
 		return nil
 	}).BindSet(cc)
