@@ -14,7 +14,7 @@ The original use case for this was needing to automate the acquisition and use o
 ## Install
 
 ```bash
-go get -u github.com/timestee/sshotp
+go install github.com/timestee/sshotp@latest
 ```
 
 ## Example
