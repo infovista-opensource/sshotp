@@ -26,13 +26,32 @@ sshotp --password mypassword123 "ssh me@myserver.mine -p 2222"
 ## Usage
 
 ```
-Usage:
-  sshotp [flags]
+USAGE: 
+      sshpass <flags> <args>
 
-Flags:
-      --disable-ssh-host-confirm   sshotp will automatically confirm the authenticity of SSH hosts unless this option is specified
-      --env                        use value of $SSHOTP environment variable as password
-  -h, --help                       help for autopass
-      --password string            plaintext password (not recommended)
-      --timeout duration           timeout length to wait for prompt/confirmation (default 10s)
+DESCRIPTION:
+      sshotp is essentially a go implementation of sshpass (https://linux.die.net/man/1/sshpass).
+      Though unlike sshpass it doesn't restrict itself to SSH logins.
+      It can supply a password to any process with an identifiable password prompt.
+
+OPTIONS GLOBAL:
+      -----------------------------------------------------------------------------------------------------------------------------------------------------------
+      FLAG                         TYPE      USAGE
+      -----------------------------------------------------------------------------------------------------------------------------------------------------------
+      --xconf_flag_files           string    |M| xconf files provided by flag, file slice, split by ,
+      -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+OPTIONS LOCAL:
+      -----------------------------------------------------------------------------------------------------------------------------------------------------------
+      FLAG                         TYPE      USAGE
+      -----------------------------------------------------------------------------------------------------------------------------------------------------------
+      --disable-ssh-host-confirm   bool      |Y| sshpass will automatically confirm the authenticity of SSH hosts unless this option is specified (default false)
+      --env_name                   string    |Y| use value environment variable as password
+      --expected_failure           string    |Y| the string to treat as an indication of failure (default "denied")
+      --expected_prompt            string    |Y| the string to treat as the password prompt (default "password:")
+      --password                   string    |Y| plaintext password (not recommended)
+      --shell                      string    |Y| Shell is a path to the shell to use e.g. /bin/bash - leave blank to use user shell
+      --timeout                    Duration  |Y| timeout length to wait for prompt/confirmation (default 10s)
+      -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ```
