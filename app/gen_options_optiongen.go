@@ -13,6 +13,8 @@ import (
 type Options struct {
 	// annotation@EnvName(comment="use value environment variable as password")
 	EnvName string `xconf:"env_name" usage:"use value environment variable as password"`
+	// annotation@Password(comment="plaintext password (not recommended)")
+	Password string `xconf:"password" usage:"plaintext password (not recommended)"`
 	// annotation@Timeout(comment="timeout length to wait for prompt/confirmation")
 	Timeout time.Duration `xconf:"timeout" usage:"timeout length to wait for prompt/confirmation"`
 	// annotation@DisableConfirmHostAuthenticity(xconf="disable-ssh-host-confirm",comment="sshpass will automatically confirm the authenticity of SSH hosts unless this option is specified")
@@ -37,7 +39,7 @@ func NewOptions(opts ...Option) *Options {
 	return cc
 }
 
-// ApplyOption apply mutiple new option and return the old ones
+// ApplyOption apply multiple new option and return the old ones
 // sample:
 // old := cc.ApplyOption(WithTimeout(time.Second))
 // defer cc.ApplyOption(old...)
@@ -58,6 +60,15 @@ func WithEnvName(v string) Option {
 		previous := cc.EnvName
 		cc.EnvName = v
 		return WithEnvName(previous)
+	}
+}
+
+// WithPassword plaintext password (not recommended)
+func WithPassword(v string) Option {
+	return func(cc *Options) Option {
+		previous := cc.Password
+		cc.Password = v
+		return WithPassword(previous)
 	}
 }
 
@@ -118,6 +129,7 @@ func newDefaultOptions() *Options {
 
 	for _, opt := range [...]Option{
 		WithEnvName(""),
+		WithPassword(""),
 		WithTimeout(time.Second * 10),
 		WithDisableConfirmHostAuthenticity(false),
 		WithShell(""),
@@ -171,6 +183,7 @@ func AtomicOptions() OptionsVisitor {
 
 // all getter func
 func (cc *Options) GetEnvName() string                      { return cc.EnvName }
+func (cc *Options) GetPassword() string                     { return cc.Password }
 func (cc *Options) GetTimeout() time.Duration               { return cc.Timeout }
 func (cc *Options) GetDisableConfirmHostAuthenticity() bool { return cc.DisableConfirmHostAuthenticity }
 func (cc *Options) GetShell() string                        { return cc.Shell }
@@ -180,6 +193,7 @@ func (cc *Options) GetExpectedFailure() string              { return cc.Expected
 // OptionsVisitor visitor interface for Options
 type OptionsVisitor interface {
 	GetEnvName() string
+	GetPassword() string
 	GetTimeout() time.Duration
 	GetDisableConfirmHostAuthenticity() bool
 	GetShell() string

@@ -17,7 +17,7 @@ func Execute() {
 	var rootCmd = xcmd.NewCommand("sshpass",
 		xcmd.WithShort("Enter passwords to commands non-interactively"),
 		xcmd.WithDescription(`
-		sshpass is essentially a go implementation of sshpass (https://linux.die.net/man/1/sshpass).
+		sshotp is essentially a go implementation of sshpass (https://linux.die.net/man/1/sshpass).
 		Though unlike sshpass it doesn't restrict itself to SSH logins.
 		It can supply a password to any process with an identifiable password prompt.`),
 	).Use(func(ctx context.Context, cmd *xcmd.Command, next xcmd.Executer) error {
@@ -27,7 +27,7 @@ func Execute() {
 		return next(ctx, cmd)
 	}).SetExecuter(func(ctx context.Context, cmd *xcmd.Command) error {
 		args := strings.Join(cmd.FlagSet.Args(), " ")
-		password := ""
+		password := cc.Password
 		if cc.EnvName != "" {
 			password = os.Getenv(cc.EnvName)
 		}
