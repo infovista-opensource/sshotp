@@ -25,16 +25,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y upx
       - name: Run GoReleaser (snapshot)
-        uses: goreleaser/goreleaser-action@v4.6.0
+        uses: goreleaser/goreleaser-action@v5
         if: github.ref_type != 'tag'
         with:
-          version: v1.23.0
           args: build --clean --snapshot
       - name: Run GoReleaser (release)
-        uses: goreleaser/goreleaser-action@v4.6.0
+        uses: goreleaser/goreleaser-action@v5
         if: github.ref_type == 'tag'
         with:
-          version: v1.23.0
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
