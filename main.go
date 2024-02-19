@@ -1,6 +1,6 @@
 package main
 
-import "github.com/timestee/sshotp/cmd"
+import "github.com/infovista-opensource/sshotp/cmd"
 
 func main() {
 	cmd.Execute()

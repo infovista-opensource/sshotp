@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/timestee/sshotp/app"
+	"github.com/infovista-opensource/sshotp/app"
 
 	"github.com/sandwich-go/xconf/xcmd"
 )
@@ -38,7 +38,7 @@ func Execute() {
 	}).BindSet(cc)
 
 	if err := rootCmd.Execute(context.Background(), os.Args[1:]...); err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

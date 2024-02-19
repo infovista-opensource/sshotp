@@ -13,7 +13,7 @@ import (
 
 	"github.com/creack/pty"
 	"github.com/riywo/loginshell"
-	"golang.org/x/crypto/ssh/terminal"
+	terminal "golang.org/x/term"
 )
 
 // Run attempts to run the provided command and insert the given passwords one by one when prompted.
