@@ -1,0 +1,40 @@
+name: go-workflow
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup go
+        uses: actions/setup-go@v5
+        with:
+          version: '>=1.20'
+      - name: Setup upx
+        shell: sh
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y upx
+      - name: Run GoReleaser (snapshot)
+        uses: goreleaser/goreleaser-action@v4.6.0
+        if: github.ref_type != 'tag'
+        with:
+          version: v1.23.0
+          args: build --clean --snapshot
+      - name: Run GoReleaser (release)
+        uses: goreleaser/goreleaser-action@v4.6.0
+        if: github.ref_type == 'tag'
+        with:
+          version: v1.23.0
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
